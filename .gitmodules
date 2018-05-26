@@ -1,0 +1,3 @@
+[submodule "SwiftPlayground.vim"]
+	path = SwiftPlayground.vim
+	url = https://github.com/jerrymarino/SwiftPlayground.vim.git
