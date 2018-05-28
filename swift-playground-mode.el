@@ -32,6 +32,8 @@
 ;; this program. If not, see <http://www.gnu.org/licenses/>.
 ;;
 
+;;; Code:
+
 (declare-function pkg-info-version-info "pkg-info" (package))
 
 (defgroup swift-playground nil
@@ -48,8 +50,9 @@
 
 ;;;###autoload
 (defun swift-playground--populate-playground-buffer (doc &optional keep-default)
-  "Populates a new playground buffer with the given contents. If keep default is
-not set, `swift-playground-buffer' is updated to the new buffer."
+  "Populate a new playground buffer with the given contents from DOC.
+If KEEP-DEFAULT is not set, `swift-playground-buffer' is updated
+to the new buffer."
   (let* ((original-buffer (current-buffer))
          (buffer-name (or swift-playground-buffer "*Playground*"))
          (buffer (get-buffer-create buffer-name)))
@@ -121,17 +124,17 @@ This function respects quotes."
 
 (defconst swift-playground--script-directory
   (if load-file-name (file-name-directory load-file-name))
-  "Directory containing swift-playground-mode.el")
+  "Directory which contains swift-playground-mode.el.")
 
 ;;;###autoload
 (defun swift-playground-current-buffer-is-playground ()
-  "Returns true if the current swift buffer is a playground."
+  "Return true if the current swift buffer is a playground."
   (and (buffer-file-name)
        (string-suffix-p "playground/Contents.swift" (buffer-file-name))))
 
 ;;;###autoload
 (defun swift-playground-run ()
-  "Runs the current swift buffer as a playground."
+  "Run the current swift buffer as a playground."
   (interactive)
   (let* ((result (swift-playground--call-process-with-output
                   "bash"
@@ -181,23 +184,18 @@ interactively."
   :init-value nil
   :group 'swift-playground
   :lighter "Playground"
-  (swift-playground--mode-hook))
-
-(defun swift-playground--run-hook ()
-  "Runs the current playground if `swift-playground-mode' is
-enabled, otherwise closes it."
-  (if swift-playground-mode
-      (swift-playground-run)
-    (swift-playground-close-buffer)))
-
-(defun swift-playground--mode-hook ()
-  "Runs the current playground and adds after save hook if
-`swift-playground-mode' is enabled, otherwise closes it and
-removes the hook."
   (if swift-playground-mode
       (add-hook 'after-save-hook #'swift-playground--run-hook)
     (remove-hook 'after-save-hook #'swift-playground--run-hook))
   (swift-playground--run-hook))
+
+(defun swift-playground--run-hook ()
+  "A hook to run the Swift playground as needed.
+If variable `swift-playground-mode' is enabled, runs the current
+playground, otherwise closes it."
+  (if swift-playground-mode
+      (swift-playground-run)
+    (swift-playground-close-buffer)))
 
 (defun swift-playground-toggle-if-needed ()
   "Setup to be run after Swift mode hook."
@@ -205,6 +203,7 @@ removes the hook."
     (swift-playground-mode)))
 
 (defun swift-playground-setup ()
+  "Initialize Swift playground mode hooks."
   (add-hook 'swift-mode-hook #'swift-playground-toggle-if-needed))
 
 (provide 'swift-playground-mode)
