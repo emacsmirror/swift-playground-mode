@@ -48,6 +48,17 @@
 
 ;;; Keymap
 
+(defvar swift-playground-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map prog-mode-map)
+    (easy-menu-define swift-playground-menu map "Swift Mode menu"
+      `("Swift Playground"
+        :help "Swift playground specific features"
+        ["Run playground" swift-playground-run
+         :help "Run Swift Playground"]))
+    map)
+  "Swift playground mode key map.")
+
 ;;;###autoload
 (defun swift-playground--populate-playground-buffer (doc &optional keep-default)
   "Populate a new playground buffer with the given contents from DOC.
