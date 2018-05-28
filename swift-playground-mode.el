@@ -1,4 +1,4 @@
-;;; swift-playground-mode.el --- Run Apple's Swift playgrounds in Emacs buffers -*- lexical-binding: t -*-
+;;; swift-playground-mode.el --- Run Apple's playgrounds in Swift buffers -*- lexical-binding: t -*-
 ;;
 ;; Copyright 2018 Michael Sanders
 ;;
@@ -14,7 +14,7 @@
 ;;
 ;; Description:
 ;;
-;; Run Apple's Swift playgrounds in Emacs buffers.
+;; Run Apple's playgrounds in Swift buffers.
 ;;
 ;; License:
 ;;
@@ -59,7 +59,6 @@
     map)
   "Swift playground mode key map.")
 
-;;;###autoload
 (defun swift-playground--populate-playground-buffer (doc &optional keep-default)
   "Populate a new playground buffer with the given contents from DOC.
 If KEEP-DEFAULT is not set, `swift-playground-buffer' is updated
@@ -92,7 +91,6 @@ to the new buffer."
 
 ;; The next two function are taken from swift-mode-repl.el
 ;; https://github.com/swift-emacs/swift-mode
-;;;###autoload
 (defun swift-playground--call-process (executable &rest args)
   "Call EXECUTABLE synchronously in separate process.
 EXECUTABLE may be a string or a list. The string is splitted by
@@ -100,7 +98,6 @@ spaces, then unquoted. ARGS are rest arguments, appended to the
 argument list. Returns the exit status."
   (swift-playground--do-call-process executable nil t nil args))
 
-;;;###autoload
 (defun swift-playground--do-call-process (executable infile destination display args)
   "Wrapper for `call-process'.
 EXECUTABLE may be a string or a list. The string is splitted by
@@ -115,7 +112,6 @@ list. Returns the exit status."
             (list infile destination display)
             (cdr command-list)))))
 
-;;;###autoload
 (defun swift-playground--call-process-with-output (executable &rest args)
   "Call EXECUTABLE synchronously in separate process.
 EXECUTABLE may be a string or a list. The string is splitted by
@@ -127,7 +123,6 @@ argument list. Returns the exit status."
       (error "%s: %s" "Cannot invoke executable" (buffer-string)))
     (buffer-string)))
 
-;;;###autoload
 (defun swift-playground--command-string-to-list (cmd)
   "Split the CMD unless it is a list.
 This function respects quotes."
