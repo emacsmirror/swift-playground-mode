@@ -38,8 +38,8 @@
 
 (defgroup swift-playground nil
   "A Swift playground Emacs client."
-  :link '(url-link :tag "Github"
-                   "https://github.com/msanders/swift-playground-mode")
+  :link '(url-link :tag "GitLab"
+                   "https://gitlab.com/michael.sanders/swift-playground-mode")
   :group 'tools
   :group 'programming)
 
