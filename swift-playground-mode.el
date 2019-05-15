@@ -34,7 +34,7 @@
 
 ;;; Code:
 
-(declare-function pkg-info-version-info "pkg-info" (package))
+(require 'comint)
 
 (defgroup swift-playground nil
   "A Swift playground Emacs client."
@@ -70,10 +70,11 @@ to the new buffer."
     (with-current-buffer buffer
       (unless (comint-check-proc buffer-name)
         (save-excursion
-          (read-only-mode 0)
-          (erase-buffer)
-          (insert doc)
-          (read-only-mode t)))
+          (let ((inhibit-read-only t))
+            (read-only-mode 0)
+            (erase-buffer)
+            (insert doc)
+            (read-only-mode t))))
       (setq-local swift-playground-buffer buffer-name))
     (with-current-buffer original-buffer
       (setq-local swift-playground-buffer buffer-name)
@@ -83,7 +84,7 @@ to the new buffer."
 
 ;;;###autoload
 (defun swift-playground-close-buffer ()
-    "Closes the current playground buffer if it is being displayed."
+    "Close the current playground buffer if it is being displayed."
   (when swift-playground-buffer
     (delete-windows-on swift-playground-buffer)
     (kill-buffer swift-playground-buffer)
@@ -106,17 +107,18 @@ spaces, then unquoted. For INFILE, DESTINATION, DISPLAY, see
 list. Returns the exit status."
   (let ((command-list
          (append (swift-playground--command-string-to-list executable) args)))
-    (apply 'call-process
-           (append
-            (list (car command-list))
-            (list infile destination display)
-            (cdr command-list)))))
+    (apply #'call-process
+           (car command-list)
+           infile
+           destination
+           display
+           (cdr command-list))))
 
 (defun swift-playground--call-process-with-output (executable &rest args)
   "Call EXECUTABLE synchronously in separate process.
 EXECUTABLE may be a string or a list. The string is splitted by
 spaces, then unquoted. ARGS are rest arguments, appended to the
-argument list. Returns the exit status."
+argument list. Return the output of the process."
   (with-temp-buffer
     (unless (zerop
              (apply 'swift-mode:call-process executable args))
@@ -133,8 +135,8 @@ This function respects quotes."
   "Directory which contains swift-playground-mode.el.")
 
 ;;;###autoload
-(defun swift-playground-current-buffer-is-playground ()
-  "Return true if the current swift buffer is a playground."
+(defun swift-playground-current-buffer-playground-p ()
+  "Return non-nil if the current swift buffer is a playground."
   (and (buffer-file-name)
        (string-suffix-p "playground/Contents.swift" (buffer-file-name))))
 
@@ -169,8 +171,7 @@ This function respects quotes."
               (let ((line-value (nth 1 split-value)))
                 (puthash line 1 set-lines)
                 (setq doc (concat doc line-value "\n"))
-                (setq line-num (+ 1 line-num)))
-              )))))
+                (setq line-num (+ 1 line-num))))))))
     (swift-playground--populate-playground-buffer doc)))
 
 ;;;###autoload
@@ -205,7 +206,7 @@ playground, otherwise closes it."
 
 (defun swift-playground-toggle-if-needed ()
   "Setup to be run after Swift mode hook."
-  (when (swift-playground-current-buffer-is-playground)
+  (when (swift-playground-current-buffer-playground-p)
     (swift-playground-mode)))
 
 (defun swift-playground-setup ()
@@ -214,4 +215,10 @@ playground, otherwise closes it."
 
 (provide 'swift-playground-mode)
 
+;;;; Closing remarks
+
 ;;; swift-playground-mode.el ends here
+
+;; Local Variables:
+;; sentence-end-double-space: nil
+;; End:
