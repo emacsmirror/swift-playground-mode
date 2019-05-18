@@ -1,4 +1,4 @@
 [submodule "SwiftPlayground.vim"]
 	path = SwiftPlayground.vim
-	url = https://github.com/msanders/SwiftPlayground.vim.git
-	branch = ms/swift-playground-mode-updates
+	url = https://github.com/jerrymarino/SwiftPlayground.vim.git
+	branch = master
