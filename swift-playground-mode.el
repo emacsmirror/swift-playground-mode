@@ -3,7 +3,7 @@
 ;; Copyright 2018 Michael Sanders
 ;;
 ;; Authors: Michael Sanders <michael.sanders@fastmail.com>
-;; URL: https://gitlab.com/msanders/swift-playground-mode
+;; URL: https://gitlab.com/michael.sanders/swift-playground-mode
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: languages swift
@@ -91,7 +91,7 @@ to the new buffer."
     (setq swift-playground-buffer nil)))
 
 ;; The next two function are taken from swift-mode-repl.el
-;; https://github.com/swift-emacs/swift-mode
+;; https://github.com/swift-emacs/swift-mode/blob/be8d770/swift-mode-repl.el
 (defun swift-playground--call-process (executable &rest args)
   "Call EXECUTABLE synchronously in separate process.
 EXECUTABLE may be a string or a list. The string is splitted by
