@@ -96,7 +96,7 @@ to the new buffer."
   "Call EXECUTABLE synchronously in separate process.
 EXECUTABLE may be a string or a list. The string is splitted by
 spaces, then unquoted. ARGS are rest arguments, appended to the
-argument list. Returns the exit status."
+argument list. Return the exit status."
   (swift-playground--do-call-process executable nil t nil args))
 
 (defun swift-playground--do-call-process (executable infile destination display args)
@@ -104,7 +104,7 @@ argument list. Returns the exit status."
 EXECUTABLE may be a string or a list. The string is splitted by
 spaces, then unquoted. For INFILE, DESTINATION, DISPLAY, see
 `call-process'. ARGS are rest arguments, appended to the argument
-list. Returns the exit status."
+list. Return the exit status."
   (let ((command-list
          (append (swift-playground--command-string-to-list executable) args)))
     (apply #'call-process
