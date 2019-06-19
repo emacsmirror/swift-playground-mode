@@ -59,12 +59,10 @@
     map)
   "Swift playground mode key map.")
 
-(defun swift-playground--populate-playground-buffer (doc &optional keep-default)
-  "Populate a new playground buffer with the given contents from DOC.
-If KEEP-DEFAULT is not set, `swift-playground-buffer' is updated
-to the new buffer."
-  (let* ((original-buffer (current-buffer))
-         (buffer-name (or swift-playground-buffer "*Playground*"))
+(defun swift-playground--populate-playground-buffer (doc)
+  "Populate a new or existing playground buffer with text.
+DOC is a string representing the contents of the buffer."
+  (let* ((buffer-name (or swift-playground-buffer "*Playground*"))
          (buffer (get-buffer-create buffer-name)))
     (display-buffer-in-side-window buffer '((side . right)))
     (with-current-buffer buffer
@@ -74,13 +72,8 @@ to the new buffer."
             (read-only-mode 0)
             (erase-buffer)
             (insert doc)
-            (read-only-mode t))))
-      (setq-local swift-playground-buffer buffer-name))
-    (with-current-buffer original-buffer
-      (setq-local swift-playground-buffer buffer-name)
-      (unless keep-default
-        (setq-default swift-playground-buffer
-                      swift-playground-buffer)))))
+            (read-only-mode t)))))
+    (setq-default swift-playground-buffer buffer-name)))
 
 ;;;###autoload
 (defun swift-playground-close-buffer ()
