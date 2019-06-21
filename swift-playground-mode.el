@@ -59,9 +59,9 @@
     map)
   "Swift playground mode key map.")
 
-(defun swift-playground--populate-playground-buffer (doc)
-  "Populate a new or existing playground buffer with text.
-DOC is a string representing the contents of the buffer."
+(defun swift-playground--populate-playground-buffer (transform)
+  "Instantiate a new or existing playground buffer.
+TRANSFORM is a function to invoke that modifies or populates the buffer."
   (let* ((buffer-name (or swift-playground-buffer "*Playground*"))
          (buffer (get-buffer-create buffer-name)))
     (display-buffer-in-side-window buffer '((side . right)))
@@ -71,7 +71,7 @@ DOC is a string representing the contents of the buffer."
           (let ((inhibit-read-only t))
             (read-only-mode 0)
             (erase-buffer)
-            (insert doc)
+            (funcall transform)
             (read-only-mode t)))))
     (setq-default swift-playground-buffer buffer-name)))
 
@@ -127,6 +127,21 @@ This function respects quotes."
   (if load-file-name (file-name-directory load-file-name))
   "Directory which contains swift-playground-mode.el.")
 
+(defun swift-playground--parse-log-prefix (log-message separator)
+  "Parse range in form of [_start_:_end_] from the prefix of LOG-MESSAGE.
+SEPARATOR is the delimiter by which each record is joined, e.g.
+`[_range_]_$builtin_LogMessage' has a separator of `_'. Return
+list of two pairs in the form of
+`((start_line start_col) (end_line end_col))'."
+  (let* ((prefix (replace-regexp-in-string (concat "\\[\\([0-9\-:]*\\)\\]"
+                                                   separator
+                                                   ".*") "\\1" log-message))
+         (ranges (split-string prefix "-")))
+    (when (= (length ranges) 2)
+      (mapcar (lambda (range) (mapcar
+                               #'string-to-number
+                               (split-string range ":"))) ranges))))
+
 ;;;###autoload
 (defun swift-playground-current-buffer-playground-p ()
   "Return non-nil if the current swift buffer is a playground."
@@ -150,13 +165,10 @@ This function respects quotes."
          (doc ""))
     (dolist (line lines)
       (unless (gethash line set-lines)
-        ;; Logs come in looking like [1:__range__] $builtin_log LogMessage.
-        (let ((split-value (split-string line "\\$builtin_log ")))
+        ;; Logs come in looking like [_range_] $builtin LogMessage.
+        (let ((split-value (split-string line " \\$builtin_log ")))
           (unless (< (length split-value) 2)
-            (let* ((target-str (car (split-string
-                                     (cadr (split-string line "\\["))
-                                     ":")))
-                   (target (string-to-number target-str)))
+            (let ((target (caar (swift-playground--parse-log-prefix line " "))))
               (while (< line-num (- target 1))
                 (setq doc (concat doc "\n"))
                 (setq line-num (+ 1 line-num)))
@@ -165,7 +177,41 @@ This function respects quotes."
                 (puthash line 1 set-lines)
                 (setq doc (concat doc line-value "\n"))
                 (setq line-num (+ 1 line-num))))))))
-    (swift-playground--populate-playground-buffer doc)))
+    (swift-playground--populate-playground-buffer (lambda () (insert doc)))))
+
+;;;###autoload
+(defun swift-playground-preview-image ()
+  "Preview an image rendered from the current cursor position."
+  (interactive)
+  (let* ((current-line (line-number-at-pos))
+         (current-col (current-column))
+         (src-uuid (md5 (directory-file-name
+                         (file-name-directory (buffer-file-name)))))
+         (asset-dir (concat "/tmp/SwiftPlaygroundAssets-" src-uuid))
+         (matched-name "")
+         (matched-col -1))
+    (cl-dolist (name (directory-files asset-dir t ".*\.png"))
+      (unless (< (length (split-string name "_\\$builtin_log_")) 2)
+        (let* ((basename (file-name-base name))
+               (range (swift-playground--parse-log-prefix basename "_"))
+               (start (car range))
+               (end (cadr range))
+               (start-line (car start))
+               (start-col (cadr end))
+               (end-line (car end))
+               (end-col (cadr end)))
+          (when (and (<= start-line current-line) (>= end-line current-line)
+                     (<= start-col current-col) (>= end-col current-col))
+            (setq matched-name name)
+            (cl-return))
+          (when (and (= end-line current-line) (< matched-col end-col))
+            (setq matched-name name)
+            (setq matched-col end-col)))))
+
+    (if (seq-empty-p matched-name)
+        (error "No image can be rendered at the current position.")
+      (swift-playground--populate-playground-buffer
+       (lambda () (insert-image (create-image matched-name)))))))
 
 ;;;###autoload
 (define-minor-mode swift-playground-mode
