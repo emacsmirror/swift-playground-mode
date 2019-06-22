@@ -1,6 +1,6 @@
 ;;; swift-playground-mode.el --- Run Apple's playgrounds in Swift buffers -*- lexical-binding: t -*-
 ;;
-;; Copyright 2018 Michael Sanders
+;; Copyright 2019 Michael Sanders
 ;;
 ;; Authors: Michael Sanders <michael.sanders@fastmail.com>
 ;; URL: https://gitlab.com/michael.sanders/swift-playground-mode
@@ -29,7 +29,7 @@
 ;; details.
 ;;
 ;; You should have received a copy of the GNU General Public License along with
-;; this program. If not, see <http://www.gnu.org/licenses/>.
+;; this program. If not, see <https://www.gnu.org/licenses/>.
 ;;
 
 ;;; Code:
@@ -209,7 +209,7 @@ list of two pairs in the form of
             (setq matched-col end-col)))))
 
     (if (seq-empty-p matched-name)
-        (error "No image can be rendered at the current position.")
+        (error "No image can be rendered at the current position")
       (swift-playground--populate-playground-buffer
        (lambda () (insert-image (create-image matched-name)))))))
 
@@ -229,7 +229,7 @@ omitted, nil or positive. If ARG is `toggle', toggle
 interactively."
   :init-value nil
   :group 'swift-playground
-  :lighter "Playground"
+  :lighter " Playground"
   (if swift-playground-mode
       (add-hook 'after-save-hook #'swift-playground--run-hook)
     (remove-hook 'after-save-hook #'swift-playground--run-hook))
