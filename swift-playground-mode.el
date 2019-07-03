@@ -35,6 +35,7 @@
 ;;; Code:
 
 (require 'comint)
+(require 'seq)
 
 (defgroup swift-playground nil
   "A Swift playground Emacs client."
@@ -46,11 +47,13 @@
 (defvar swift-playground-buffer nil
   "Stores the name of the current swift playground buffer, or nil.")
 
+(defvar swift-playground--build-directory nil
+  "Stores the name of the current swift playground build directory, or nil.")
+
 ;;; Keymap
 
 (defvar swift-playground-mode-map
   (let ((map (make-sparse-keymap)))
-    (set-keymap-parent map prog-mode-map)
     (easy-menu-define swift-playground-menu map "Swift Mode menu"
       `("Swift Playground"
         :help "Swift playground specific features"
@@ -64,16 +67,15 @@
 TRANSFORM is a function to invoke that modifies or populates the buffer."
   (let* ((buffer-name (or swift-playground-buffer "*Playground*"))
          (buffer (get-buffer-create buffer-name)))
-    (display-buffer-in-side-window buffer '((side . right)))
+    (display-buffer buffer '((display-buffer-in-side-window) (side . right)))
     (with-current-buffer buffer
       (unless (comint-check-proc buffer-name)
         (save-excursion
           (let ((inhibit-read-only t))
-            (read-only-mode 0)
             (erase-buffer)
             (funcall transform)
             (read-only-mode t)))))
-    (setq-default swift-playground-buffer buffer-name)))
+    (setq swift-playground-buffer buffer-name)))
 
 ;;;###autoload
 (defun swift-playground-close-buffer ()
@@ -124,7 +126,7 @@ This function respects quotes."
   (if (listp cmd) cmd (split-string-and-unquote cmd)))
 
 (defconst swift-playground--script-directory
-  (if load-file-name (file-name-directory load-file-name))
+  (when load-file-name (file-name-directory load-file-name))
   "Directory which contains swift-playground-mode.el.")
 
 (defun swift-playground--parse-log-prefix (log-message separator)
@@ -163,6 +165,7 @@ list of two pairs in the form of
          (set-lines (make-hash-table :test 'equal))
          (line-num 0)
          (doc ""))
+    (setq swift-playground--build-directory (car lines))
     (dolist (line lines)
       (unless (gethash line set-lines)
         ;; Logs come in looking like [_range_] $builtin LogMessage.
@@ -183,11 +186,12 @@ list of two pairs in the form of
 (defun swift-playground-preview-image ()
   "Preview an image rendered from the current cursor position."
   (interactive)
+  (when (seq-empty-p swift-playground--build-directory)
+    (swift-playground-run))
   (let* ((current-line (line-number-at-pos))
          (current-col (current-column))
-         (src-uuid (md5 (directory-file-name
-                         (file-name-directory (buffer-file-name)))))
-         (asset-dir (concat "/tmp/SwiftPlaygroundAssets-" src-uuid))
+         (asset-dir (expand-file-name "Assets"
+                                      swift-playground--build-directory))
          (matched-name "")
          (matched-col -1))
     (cl-dolist (name (directory-files asset-dir t ".*\.png"))
@@ -231,22 +235,17 @@ interactively."
   :group 'swift-playground
   :lighter " Playground"
   (if swift-playground-mode
-      (add-hook 'after-save-hook #'swift-playground--run-hook)
-    (remove-hook 'after-save-hook #'swift-playground--run-hook))
-  (swift-playground--run-hook))
-
-(defun swift-playground--run-hook ()
-  "A hook to run the Swift playground as needed.
-If variable `swift-playground-mode' is enabled, runs the current
-playground, otherwise closes it."
-  (if swift-playground-mode
-      (swift-playground-run)
-    (swift-playground-close-buffer)))
+      (progn
+        (swift-playground-run)
+        (add-hook 'after-save-hook #'swift-playground-run nil 'local))
+    (swift-playground-close-buffer)
+    (remove-hook 'after-save-hook #'swift-playground-run 'local)))
 
 (defun swift-playground-toggle-if-needed ()
   "Setup to be run after Swift mode hook."
-  (when (swift-playground-current-buffer-playground-p)
-    (swift-playground-mode)))
+  (if (swift-playground-current-buffer-playground-p)
+      (swift-playground-mode)
+    (swift-playground-close-buffer)))
 
 (defun swift-playground-setup ()
   "Initialize Swift playground mode hooks."
