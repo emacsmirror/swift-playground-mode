@@ -146,7 +146,7 @@ list of two pairs in the form of
 (defun swift-playground-current-buffer-playground-p ()
   "Return non-nil if the current swift buffer is a playground."
   (and (buffer-file-name)
-       (string-suffix-p "playground/Contents.swift" (buffer-file-name))))
+       (string-suffix-p ".playground/Contents.swift" (buffer-file-name) t)))
 
 ;;;###autoload
 (defun swift-playground-run ()
