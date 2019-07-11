@@ -116,7 +116,7 @@ spaces, then unquoted. ARGS are rest arguments, appended to the
 argument list. Return the output of the process."
   (with-temp-buffer
     (unless (zerop
-             (apply 'swift-mode:call-process executable args))
+             (apply 'swift-playground--call-process executable args))
       (error "%s: %s" "Cannot invoke executable" (buffer-string)))
     (buffer-string)))
 
@@ -241,15 +241,16 @@ interactively."
     (swift-playground-close-buffer)
     (remove-hook 'after-save-hook #'swift-playground-run 'local)))
 
-(defun swift-playground-toggle-if-needed ()
-  "Setup to be run after Swift mode hook."
-  (if (swift-playground-current-buffer-playground-p)
-      (swift-playground-mode)
-    (swift-playground-close-buffer)))
+;;;###autoload
+(define-globalized-minor-mode swift-playground-global-mode
+  swift-playground-mode
+  (lambda ()
+    (when (swift-playground-current-buffer-playground-p)
+      (swift-playground-mode t))))
 
 (defun swift-playground-setup ()
   "Initialize Swift playground mode hooks."
-  (add-hook 'swift-mode-hook #'swift-playground-toggle-if-needed))
+  (add-hook 'swift-mode-hook #'swift-playground-global-mode))
 
 (provide 'swift-playground-mode)
 

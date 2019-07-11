@@ -23,8 +23,8 @@ Autoload using `use-package`:
 
 ```
 (use-package swift-playground-mode :defer t :init
-  (autoload 'swift-playground-toggle-if-needed "swift-playground-mode" nil t)
-  (add-hook 'swift-mode-hook #'swift-playground-toggle-if-needed))
+  (autoload 'swift-playground-global-mode "swift-playground-mode" nil t)
+  (add-hook 'swift-mode-hook #'swift-playground-global-mode))
 ```
 
 or use:
