@@ -5,7 +5,7 @@
 ;; Authors: Michael Sanders <michael.sanders@fastmail.com>
 ;; URL: https://gitlab.com/michael.sanders/swift-playground-mode
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "24.4") (seq "2.2.0"))
 ;; Keywords: languages swift
 ;;
 ;; This file is not part of GNU Emacs.
@@ -69,12 +69,10 @@ TRANSFORM is a function to invoke that modifies or populates the buffer."
          (buffer (get-buffer-create buffer-name)))
     (display-buffer buffer '((display-buffer-in-side-window) (side . right)))
     (with-current-buffer buffer
-      (unless (comint-check-proc buffer-name)
-        (save-excursion
-          (let ((inhibit-read-only t))
-            (erase-buffer)
-            (funcall transform)
-            (read-only-mode t)))))
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (funcall transform)))
+      (read-only-mode t)
     (setq swift-playground-buffer buffer-name)))
 
 ;;;###autoload
@@ -116,7 +114,7 @@ spaces, then unquoted. ARGS are rest arguments, appended to the
 argument list. Return the output of the process."
   (with-temp-buffer
     (unless (zerop
-             (apply 'swift-playground--call-process executable args))
+             (apply #'swift-playground--call-process executable args))
       (error "%s: %s" "Cannot invoke executable" (buffer-string)))
     (buffer-string)))
 
