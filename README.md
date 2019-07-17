@@ -22,7 +22,7 @@ It compiles the playground when you save or invoke `M-x swift-playground-run`.
 Autoload using `use-package`:
 
 ```
-(use-package swift-playground-mode :defer t :init
+(use-package swift-playground-mode :ensure t :defer t :init
   (autoload 'swift-playground-global-mode "swift-playground-mode" nil t)
   (add-hook 'swift-mode-hook #'swift-playground-global-mode))
 ```
