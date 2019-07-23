@@ -1,3 +1,6 @@
+[![MELPA](https://melpa.org/packages/swift-playground-mode-badge.svg)](https://melpa.org/#/swift-playground-mode)
+[![MELPA](https://stable.melpa.org/packages/swift-playground-mode-badge.svg)](https://stable.melpa.org/#/swift-playground-mode)
+
 # swift-playground-mode
 
 Emacs support for Swift playgrounds. An Emacs port of
