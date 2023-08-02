@@ -2,7 +2,7 @@
 ;;
 ;; Copyright 2019 Michael Sanders
 ;;
-;; Authors: Michael Sanders <michael.sanders@fastmail.com>
+;; Authors: Michael Sanders <emacs@michaelsande.rs>
 ;; URL: https://gitlab.com/michael.sanders/swift-playground-mode
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "24.4") (seq "2.2.0"))
